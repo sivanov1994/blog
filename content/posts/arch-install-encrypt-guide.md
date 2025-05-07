@@ -4,6 +4,7 @@ date: 2025-05-05
 description: "A complete step-by-step guide to installing Arch Linux with full disk encryption (LUKS), LVM, and systemd-boot across two NVMe drives."
 tags: ["arch linux", "encryption", "luks", "lvm", "systemd-boot", "installation"]
 categories: ["linux", "security"]
+draft: false
 ---
 This guide describes how to install Arch Linux with full disk encryption, Logical Volume Management (LVM), and the minimalist systemd-boot bootloader. The setup uses two NVMe drives, as this reflects my specific hardware configuration. If you're using only one drive, the process remains mostly the same—just adapt the LUKS and LVM steps accordingly.
 
