@@ -9,10 +9,6 @@ pygmentsUseClasses: true
 
 ignoreLogs: ["warning-goldmark-raw-html"]
 
-#services:
-# googleAnalytics:
-#  ID: G-XXXXXXXXXX
-
 minify:
   disableXML: true
   minifyOutput: true
