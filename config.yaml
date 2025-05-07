@@ -66,22 +66,7 @@ params:
       - name: Tags
         url: tags
 
-  homeInfoParams:
-    Title: "Welcome to my blog!"
-    Content: >
-      This is where I document my learning journey, tackle technical challenges, and share practical insights.
-      From Kubernetes and cloud-native tooling to terminal workflows and note-taking strategies.
-      I’ll be sharing my projects and the lessons I learn along the way.
-
-  socialIcons:
-    - name: github
-      url: "https://github.com/sivanov1994"
-    - name: linkedin
-      url: "https://www.linkedin.com/in/simeonivanov1994"
-    - name: rss
-      url: "https://simeonivanov.org/index.xml"
-
-  cover:
+    cover:
     hidden: false
     hiddenInList: false
     hiddenInSingle: true
