@@ -133,7 +133,7 @@ Hex code or GUID: 8e00
 w
 ```
 
-I prefer to partition the second (nvme1n1)disk (e.g. for clarity or better tooling support), you can create a single GPT partition that spans the entire disk and set its hex code to 8e00 .
+I prefer to partition the second (nvme1n1)disk (e.g. for clarity or better tooling support), you can create a single GPT partition that spans the entire disk and set its hex code to 8e00
 
 Steps:
 ```bash
