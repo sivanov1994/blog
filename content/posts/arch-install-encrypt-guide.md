@@ -76,24 +76,24 @@ Everything except the `/boot` partition will be encrypted, ensuring a secure and
 
 Here is my actual disk layout (run `lsblk` to inspect yours):
 
-**Note:** The `/home` logical volume spans both disks, so its device-mapper entry may appear under both `rion` and `cryptlvm` in `lsblk`.
+**Note:** The `/home` logical volume spans both disks, so its device-mapper entry may appear under both `cryptlvm1` and `cryptlvm2` in `lsblk`.
 
 ```
 NAME            MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINTS
 nvme0n1         259:0    0 931.5G  0 disk
 ├─nvme0n1p1     259:2    0     1G  0 part  /boot
 └─nvme0n1p2     259:3    0 930.5G  0 part
-  └─rion        253:0    0 930.5G  0 crypt
-    ├─rion-swap 253:2    0     8G  0 lvm   [SWAP]
-    ├─rion-root 253:3    0    32G  0 lvm   /
-    └─rion-home 253:4    0   1.8T  0 lvm   /home
+  └─cryptlvm1        253:0    0 930.5G  0 crypt
+    ├─cryptlvm1-swap 253:2    0     8G  0 lvm   [SWAP]
+    ├─cryptlvm1-root 253:3    0    32G  0 lvm   /
+    └─cryptlvm1-home 253:4    0   1.8T  0 lvm   /home
 nvme1n1         259:1    0 931.5G  0 disk
 └─nvme1n1p1     259:4    0 931.5G  0 part
-  └─cryptlvm    253:1    0 931.5G  0 crypt
-    └─rion-home 253:4    0   1.8T  0 lvm   /home
+  └─cryptlvm2    253:1    0 931.5G  0 crypt
+    └─cryptlvm1-home 253:4    0   1.8T  0 lvm   /home
 ```
 
-**Note:** The volume group `rion` spans across both encrypted disks. The root (`/`), swap, and part of the home volume reside on the first device (`rion`, from `nvme0n1p2`). The second device (`cryptlvm`, from `nvme1n1p1`) is added entirely to extend the `/home` volume.
+**Note:** The volume group `cryptlvm1` spans across both encrypted disks. The root (`/`), swap, and part of the home volume reside on the first device (`cryptlvm1`, from `nvme0n1p2`). The second device (`cryptlvm2`, from `nvme1n1p1`) is added entirely to extend the `/home` volume.
 
 This setup results in full disk encryption (FDE), with the sole exception of the `/boot` partition, which remains unencrypted to allow the system to boot.
 
@@ -172,7 +172,7 @@ Verify passphrase:
 
 Then open it:
 ```bash
-cryptsetup open /dev/nvme0n1p2 rion
+cryptsetup open /dev/nvme0n1p2 cryptlvm1
 ```
 
 Encrypt nvme1n1p1:
@@ -182,36 +182,37 @@ cryptsetup luksFormat /dev/nvme1n1p1
 
 Unlock it:
 ```bash
-cryptsetup open /dev/nvme1n1p1 cryptlvm
+cryptsetup open /dev/nvme1n1p1 cryptlvm2
 ```
 
 ### Setting Up LVM
 
-Now we’ll create one logical volume group (cryptlvm) across both unlocked encrypted containers. Inside it, we’ll define three logical volumes: one for root, one for swap, and the rest for home.
+Now we’ll create one logical volume group (cryptlvm1) across both unlocked encrypted containers. Inside it, we’ll define three logical volumes: one for root, one for swap, and the rest for home.
+
 
 ```bash
-pvcreate /dev/mapper/rion /dev/mapper/cryptlvm
-vgcreate rion /dev/mapper/rion /dev/mapper/cryptlvm
+pvcreate /dev/mapper/cryptlvm1 /dev/mapper/cryptlvm2
+vgcreate cryptlvm1 /dev/mapper/cryptlvm1 /dev/mapper/cryptlvm2
 ```
 
-**Note:** The names rion and cryptlvm used in this guide are just examples. You can choose whatever naming convention you prefer — just make sure to use the same name consistently throughout the setup.
+**Note:** The names cryptlvm1 and cryptlvm2 used in this guide are just examples. You can choose whatever naming convention you prefer — just make sure to use the same name consistently throughout the setup.
 
 ### Creating Logical Volumes
 
-Inside our volume group rion, we’ll now define three logical volumes:
+Inside our volume group cryptlvm1, we’ll now define three logical volumes:
 ```bash
-lvcreate -L 32G rion -n root      # Root filesystem
-lvcreate -L 8G rion -n swap       # Swap volume
-lvcreate -l 100%FREE rion -n home # All remaining space goes to home
+lvcreate -L 32G cryptlvm1 -n root      # Root filesystem
+lvcreate -L 8G cryptlvm1 -n swap       # Swap volume
+lvcreate -l 100%FREE cryptlvm1 -n home # All remaining space goes to home
 ```
 
 This gives us the following logical volume structure:
 
-- `/dev/rion/root` → mounted as `/`
-- `/dev/rion/swap` → swap area
-- `/dev/rion/home` → user data and home directory (spanning both encrypted disks)
+- `/dev/cryptlvm1/root` → mounted as `/`
+- `/dev/cryptlvm1/swap` → swap area
+- `/dev/cryptlvm1/home` → user data and home directory (spanning both encrypted disks)
 
-**Note:** Depending on your LVM setup, logical volumes might appear as `/dev/mapper/rion-root`, `/rion-swap`, etc., or as `/dev/rion/root`, depending on naming conventions. Just make sure to use consistent names in your bootloader and `/etc/fstab`.
+**Note:** Depending on your LVM setup, logical volumes might appear as `/dev/mapper/cryptlvm1-root`, `/cryptlvm1-swap`, etc., or as `/dev/cryptlvm1/root`, depending on naming conventions. Just make sure to use consistent names in your bootloader and `/etc/fstab`.
 
 You can verify the layout with:
 ```bash
@@ -221,28 +222,28 @@ lvs
 Here is my actual output:
 ```bash
 LV   VG       Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
-  home rion -wi-ao---- <1.78t
-  root rion -wi-ao---- 32.00g
-  swap rion -wi-ao----  8.00g
+  home cryptlvm1 -wi-ao---- <1.78t
+  root cryptlvm1 -wi-ao---- 32.00g
+  swap cryptlvm1 -wi-ao----  8.00g
 ```
 
 ## Formatting the Partitions
 
-Now that the logical volumes and boot partition are set up, it’s time to format everything so it can be used by the system. We’ll format the logical volumes inside our cryptlvm volume group — and the boot partition — as follows:
+Now that the logical volumes and boot partition are set up, it’s time to format everything so it can be used by the system. We’ll format the logical volumes inside our cryptlvm1 volume group — and the boot partition — as follows:
 
 **Format the Root Filesystem:**
 ```bash
-mkfs.ext4 /dev/rion/root
+mkfs.ext4 /dev/cryptlvm1/root
 ```
 
 **Format the Home Partition**
 ```bash
-mkfs.ext4 /dev/rion/home
+mkfs.ext4 /dev/cryptlvm1/home
 ```
 
 **Format the Swap Volume**
 ```bash
-mkswap /dev/rion/swap
+mkswap /dev/cryptlvm1/swap
 ```
 
 **Format the EFI System Partition (Boot)**
@@ -256,13 +257,13 @@ With all partitions formatted, it’s time to mount them in preparation for inst
 
 **Mount the Root Filesystem**
 ```bash
-mount /dev/rion/root /mnt
+mount /dev/cryptlvm1/root /mnt
 ```
 
 **Create and Mount the Home Directory**
 ```bash
 mkdir /mnt/home
-mount /dev/rion/home /mnt/home
+mount /dev/cryptlvm1/home /mnt/home
 ```
 
 **Mount the EFI Boot Partition**
@@ -273,15 +274,15 @@ mount /dev/nvme0n1p1 /mnt/boot
 
 **Activate Swap**
 ```bash
-swapon /dev/rion/swap
+swapon /dev/cryptlvm1/swap
 ```
 
 Your filesystems are now mounted and ready. The final directory structure at this point looks like this:
 ```bash
 /mnt
 ├── boot          → /dev/nvme0n1p1
-├── home          → /dev/rion/home
-└── (root)        → /dev/rion/root
+├── home          → /dev/cryptlvm1/home
+└── (root)        → /dev/cryptlvm1/root
 ```
 
 ### Installing the Base Arch Linux System
@@ -298,16 +299,9 @@ We’ll install:
 
 `linux-firmware` → drivers for modern hardware
 
-`systemd-boot` → simple UEFI bootloader
-
-`systemd-networkd` → basic networking
-
-`lvm2` → manage logical volumes
-
-`cryptsetup` → handle LUKS encryption
 ```bash
 
-pacstrap -K /mnt base linux linux-firmware systemd-boot systemd-networkd systemd-resolved lvm2 cryptsetup
+pacstrap -K /mnt base linux linux-firmware
 ```
 
 `-K` copies your current keyring into the new system to avoid signature issues during package install.
@@ -429,6 +423,12 @@ EOF
 
 *Replace ryan with your actual hostname if you chose a different one above.*
 
+Before configuring initramfs, I prefer to use vim as my text editor. Since I haven’t installed it yet, I’ll do that now:
+```bash
+
+pacman -Sy vim
+```
+
 **Mkinitcpio**
 
 mkinitcpio is a utility used to create the initial RAM filesystem (initramfs) — a small, temporary root file system loaded into memory at boot time. Its purpose is to:
@@ -437,8 +437,22 @@ mkinitcpio is a utility used to create the initial RAM filesystem (initramfs) �
 - Load essential kernel modules
 - Handle early boot logic (e.g., unlocking encrypted volumes, assembling LVM)
 
-Without a proper initramfs, your system wouldn’t know how to boot into the actual Linux environment — especially if you're using advanced setups like LUKS encryption, LVM, or RAID. Now run:
+First, make sure the lvm2 package is installed:
+```bash
+pacman -S lvm2
+```
+Open the configuration file:
+```bash
+vim /etc/mkinitcpio.conf
+```
 
+
+Locate the `HOOKS` line and make sure it looks like this:
+```bash
+HOOKS=(base systemd microcode modconf kms keyboard sd-vconsole block sd-encrypt lvm2 filesystems fsck)
+```
+
+Finally, regenerate the initramfs:
 ```bash
 mkinitcpio -P
 ```
@@ -458,7 +472,7 @@ The command output should look like this:
 ==> WARNING: Possibly missing firmware for module: wd719x
 ==> WARNING: Possibly missing firmware for module: aic94xx
   -> Running build hook: [sd-encrypt]
-  -> Running build hook: [sd-lvm2]
+  -> Running build hook: [lvm2]
   -> Running build hook: [filesystems]
   -> Running build hook: [fsck]
 ==> Generating module dependencies
@@ -542,7 +556,7 @@ title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /amd-ucode.img
 initrd  /initramfs-linux.img
-options rd.luks.name=11111111-aaaa-bbbb-cccc-111111111111=rion rd.luks.name=22222222-dddd-eeee-ffff-222222222222=cryptlvm root=/dev/rion/root rw
+options rd.luks.name=11111111-aaaa-bbbb-cccc-111111111111=cryptlvm1 rd.luks.name=22222222-dddd-eeee-ffff-222222222222=cryptlvm2 root=/dev/cryptlvm1/root rw
 EOF
 ```
 
@@ -554,9 +568,9 @@ rd.luks.name=UUID=NAME
 
 In my case:
 
-rion → first disk (/dev/nvme0n1p2) containing the root volume
-cryptlvm → second disk (/dev/nvme1n1p1) contributing to the LVM volume group
-root=/dev/rion/root → Specifies the root filesystem inside the unlocked volume
+cryptlvm1 → first disk (/dev/nvme0n1p2) containing the root volume
+cryptlvm2 → second disk (/dev/nvme1n1p1) contributing to the LVM volume group
+root=/dev/cryptlvm1/root → Specifies the root filesystem inside the unlocked volume
 rw → Mounts the root filesystem as read-write
 ```
 
@@ -573,12 +587,6 @@ pacman -Sy sudo
 ```
 
 sudo lets non-root users execute administrative commands securely.
-
-Before configuring sudo, I prefer to use vim as my text editor. Since I haven’t installed it yet, I’ll do that now:
-```bash
-
-pacman -Sy vim
-```
 
 Then set it as the default editor for the session:
 ```bash
