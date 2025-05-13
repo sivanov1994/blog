@@ -120,6 +120,7 @@ Partition number: 1
 First sector: (press Enter for default)
 Last sector: +1G
 Hex code or GUID: ef00
+w
 ```
 
 3. Create encrypted LUKS container (rest of the disk)
@@ -128,7 +129,8 @@ n
 Partition number: 2
 First sector: (press Enter)
 Last sector: (press Enter to use remaining space)
-Hex code or GUID: 8e00 
+Hex code or GUID: 8e00
+w
 ```
 
 I prefer to partition the second (nvme1n1)disk (e.g. for clarity or better tooling support), you can create a single GPT partition that spans the entire disk and set its hex code to 8e00 .
