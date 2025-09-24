@@ -10,7 +10,7 @@ This guide describes how to install Arch Linux with full disk encryption, Logica
 
 Let’s get started.
 
-## Hardware for this Guide
+### Hardware for this Guide
 
 - CPU: AMD Ryzen 9 5900X
 - GPU: AMD Radeon RX 6900 XT
@@ -18,7 +18,7 @@ Let’s get started.
 - Two NVMe drives, each 1TB  
 - UEFI-enabled system (BIOS must support UEFI)  
 
-## Preparing the Terrain
+### Preparing the Terrain
 
 Before embarking on the installation, you’ll need a bootable USB drive with Arch Linux.
 
@@ -36,23 +36,27 @@ sdb           8:16   1 14.9G  0 disk
 └─sdb3        8:19   1  300K  0 part 
 ```
 
-My USB drive is 16GB and recognized as /dev/sdb. Now it’s time to write the ISO image onto it using dd. Caution: this command will irrevocably erase all data on the drive, so double-check the device path before proceeding.
+My USB drive is 16GB and recognized as `/dev/sdb`. Now it’s time to write the ISO image onto it using `dd`. **Caution**: This command will irrevocably erase all data on the drive, so double-check the device path before proceeding.
 
 `sudo dd bs=4M if=/path/to/archlinux.iso of=/dev/sdb status=progress oflag=sync`
 
 Wait for the process to complete — it may take a few minutes. Once it’s done, you’re ready to boot from the USB drive and dive into the real journey.
 
-At this point we should be in front of a prompt:
+At this point, we should be in front of a prompt:
 
-`root@archiso ~ #`
+```
+root@archiso ~ #
+```
 
-This is our root prompt and I’ll be shortening that to $ in this post.
+This is our root prompt, and I’ll be shortening that to `$` in this post.
 
-This is an OPTIONAL step but if the console font is too small or not readable, we can set it up:
+This is an **optional** step, but if the console font is too small or not readable, we can set it up:
 
-`setfont latarcyrheb-sun32`
+```
+setfont latarcyrheb-sun32
+```
 
-We need an internet connection, so let’s configure the network. I connected via ethernet so everything worked out of the box. If you need WiFi, you can set it up by launching iwctl (interaction mode with autocompletion). Here are some useful commands:
+We need an internet connection, so let’s configure the network. I connected via Ethernet, so everything worked out of the box. If you need Wi-Fi, you can set it up by launching `iwctl` (interaction mode with autocompletion). Here are some useful commands:
 
 ```bash
  iwctl
@@ -61,18 +65,21 @@ We need an internet connection, so let’s configure the network. I connected vi
  station <INTERFACE> get-networks    # Display the networks found by a station
  station <INTERFACE> connect <SSID>  # Connect to a network with a station
 ```
-We also need to update our system clock. Let’s use timedatectl(1) to ensure the system clock is accurate:
+We also need to update our system clock. Let’s use `timedatectl` to ensure the system clock is accurate:
 
 `timedatectl set-ntp true`
 
-To check the service status, we can use timedatectl status.
+To check the service status, we can use:
 
- I tend to use this personal naming convention to identify my hardware with different operating systems, you will see this name around when setting things up in a few places, especially when setting up the volumes in LVM. Swap it out for your own.
+```
+timedatectl status
+```
+
+I tend to use this personal naming convention to identify my hardware with different operating systems, you will see this name around when setting things up in a few places, especially when setting up the volumes in LVM. Swap it out for your own.
 
 ### Disk Partitioning
 
-Once that’s done, we can begin building up to the installation.  
-Everything except the `/boot` partition will be encrypted, ensuring a secure and flexible system layout for power users who value control and privacy.
+Once that’s done, we can begin building up to the installation. Everything except the `/boot` partition will be encrypted, ensuring a secure and flexible system layout for power users who value control and privacy.
 
 Here is my actual disk layout (run `lsblk` to inspect yours):
 
@@ -104,15 +111,16 @@ For partitioning, I used the `gdisk` utility to create and manage the GPT layout
 
 You’ll enter the interactive gdisk prompt. Follow these steps:
 
-1. Create GPT label (if asked)
+Create GPT label (if asked)
 If the disk is empty or has no GPT, you may be prompted to create one. Type:
+
 ```bash
 o
 ```
 
 Confirm with `y` to create a new empty GPT.
 
-2. Create EFI system partition (1 GB for /boot)
+Create EFI system partition (1 GB for /boot)
 
 ```bash
 n
@@ -123,7 +131,8 @@ Hex code or GUID: ef00
 w
 ```
 
-3. Create encrypted LUKS container (rest of the disk)
+Create encrypted LUKS container (rest of the disk)
+
 ```bash
 n
 Partition number: 2
@@ -133,14 +142,14 @@ Hex code or GUID: 8e00
 w
 ```
 
-I prefer to partition the second (nvme1n1)disk (e.g. for clarity or better tooling support), you can create a single GPT partition that spans the entire disk and set its hex code to 8e00
+I prefer to partition the second (`nvme1n1`) disk (e.g., for clarity or better tooling support), you can create a single GPT partition that spans the entire disk and set its hex code to `8e00`.
 
 Steps:
 ```bash
 
 gdisk /dev/nvme1n1
 ```
-Then inside gdisk:
+Then inside `gdisk`:
 ```bash
 o                # create new GPT if needed
 n                # new partition
@@ -153,7 +162,7 @@ w                # write and exit
 
 ### Setting Up Disk Encryption
 
-Now that our partitions are in place, it’s time to secure the system. We’ll encrypt two devices: the second partition of the first disk (/dev/nvme0n1p2) and the entirety of the second disk (/dev/nvme1n1p1). These will be combined into a single LVM volume group that will host our root, swap, and home volumes — all protected by encryption.
+Now that our partitions are in place, it’s time to secure the system. We’ll encrypt two devices: the second partition of the first disk (`/dev/nvme0n1p2`) and the entirety of the second disk (`/dev/nvme1n1p1`). These will be combined into a single LVM volume group that will host our root, swap, and home volumes — all protected by encryption.
 
 Encrypt nvme0n1p2 (Arch system volume):
 ```bash
@@ -177,7 +186,8 @@ Then open it:
 cryptsetup open /dev/nvme0n1p2 cryptlvm1
 ```
 
-Encrypt nvme1n1p1:
+**Encrypt `nvme1n1p1`:**
+
 ```bash
 cryptsetup luksFormat /dev/nvme1n1p1
 ```
@@ -189,7 +199,7 @@ cryptsetup open /dev/nvme1n1p1 cryptlvm2
 
 ### Setting Up LVM
 
-Now we’ll create one logical volume group (cryptlvm1) across both unlocked encrypted containers. Inside it, we’ll define three logical volumes: one for root, one for swap, and the rest for home.
+Now we’ll create one logical volume group (`cryptlvm1`) across both unlocked encrypted containers. Inside it, we’ll define three logical volumes: one for root, one for swap, and the rest for home.
 
 
 ```bash
@@ -197,11 +207,11 @@ pvcreate /dev/mapper/cryptlvm1 /dev/mapper/cryptlvm2
 vgcreate cryptlvm1 /dev/mapper/cryptlvm1 /dev/mapper/cryptlvm2
 ```
 
-**Note:** The names cryptlvm1 and cryptlvm2 used in this guide are just examples. You can choose whatever naming convention you prefer — just make sure to use the same name consistently throughout the setup.
+**Note:** The names `cryptlvm1` and `cryptlvm2` used in this guide are just examples. You can choose whatever naming convention you prefer — just make sure to use the same name consistently throughout the setup.
 
 ### Creating Logical Volumes
 
-Inside our volume group cryptlvm1, we’ll now define three logical volumes:
+Inside our volume group `cryptlvm1`, we’ll now define three logical volumes:
 ```bash
 lvcreate -L 32G cryptlvm1 -n root      # Root filesystem
 lvcreate -L 8G cryptlvm1 -n swap       # Swap volume
@@ -231,16 +241,16 @@ LV   VG       Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Con
 
 ## Formatting the Partitions
 
-Now that the logical volumes and boot partition are set up, it’s time to format everything so it can be used by the system. We’ll format the logical volumes inside our cryptlvm1 volume group — and the boot partition — as follows:
+Now that the logical volumes and boot partition are set up, it’s time to format everything so it can be used by the system. We’ll format the logical volumes inside our `cryptlvm1` volume group — and the boot partition — as follows:
 
 **Format the Root Filesystem:**
 ```bash
-mkfs.ext4 /dev/cryptlvm1/root
+mkfs.btrfs /dev/cryptlvm1/root
 ```
 
 **Format the Home Partition**
 ```bash
-mkfs.ext4 /dev/cryptlvm1/home
+mkfs.btrfs /dev/cryptlvm1/home
 ```
 
 **Format the Swap Volume**
@@ -263,15 +273,15 @@ mount /dev/cryptlvm1/root /mnt
 ```
 
 **Create and Mount the Home Directory**
+
 ```bash
-mkdir /mnt/home
-mount /dev/cryptlvm1/home /mnt/home
+mount --mkdir /dev/crypt/home /mnt/home
 ```
 
-**Mount the EFI Boot Partition**
+*Mount the EFI Boot Partition**
+
 ```bash
-mkdir /mnt/boot
-mount /dev/nvme0n1p1 /mnt/boot
+mount --mkdir /dev/nvme0n1p1 /mnt/boot
 ```
 
 **Activate Swap**
@@ -310,18 +320,19 @@ pacstrap -K /mnt base linux linux-firmware
 
 ### Configuring the New Installation
 
-**Fstab**
-The fstab file can be used to define how disk partitions, various other block devices, or remote filesystems should be mounted into the filesystem.
+**Fstab**:
 
-First we generate an fstab file (use -U or -L to define by UUID or labels, respectively):
-`genfstab -U /mnt >> /mnt/etc/fstab`
+The **`fstab`** file defines how disk partitions, other block devices, or remote filesystems should be mounted.
+
+First, generate an `fstab` file:`genfstab -U /mnt >> /mnt/etc/fstab`
 
 With the base system installed, it’s time to chroot into it and finalize the configuration.
 
 **Chroot into Your New System**
-This changes your root directory to the newly installed system, allowing you to configure it as if you had booted into it directly.
-```bash
 
+This changes your root directory to the newly installed system, allowing you to configure it as if you had booted into it directly.
+
+```bash
 arch-chroot /mnt
 ```
 
@@ -357,29 +368,39 @@ UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  /home   ext4    rw,relatime          
 
 Locales are used by glibc and other locale-aware programs or libraries for rendering text, correctly displaying regional monetary values, time and date formats, alphabetic idiosyncrasies, and other locale-specific standards.
 
-I personally uncomment only en_US.UTF-8 UTF-8 in the /etc/locale.gen file. However, you may uncomment additional locales if needed — for example, someone living in Bulgaria might also enable bg_BG.UTF-8 UTF-8.
+I personally uncomment only **en_US.UTF-8 UTF-8** in the **`/etc/locale.gen`** file. However, you may uncomment additional locales if needed — for example, someone living in Bulgaria might also enable **bg_BG.UTF-8 UTF-8**.
+
+```bash
+vim /etc/locale.conf
+```
+
+Add the following content (if not already there):
+
+```
+LANG="en_US.UTF-8"
+```
+
+Next, open **`/etc/locale.gen`** with **vim** to uncomment (remove the `#`) the required locales. For example, if you want to use English (US), uncomment these lines:
+
+```
+vim /etc/locale.gen
+```
+
+Find and uncomment (remove the `#`):
+
+```
+en_US.UTF-8 UTF-8
+```
 
 Once we are done, we need to generate them by running:
+
 ```bash
 locale-gen
 ```
 
-As a last step in this section, let’s execute the following in order to create the locale.conf(5) file and set the LANG variable accordingly:
-```bash
-echo LANG=en_US.UTF-8 > /etc/locale.conf
-export LANG=en_US.UTF-8
-```
-
 **Timezone Setup**
 
-Select your timezone (optional but helpful interactive method):
-```bash
-tzselect
-```
-
-*This gives you a preview but doesn’t configure the system.*
-
-Link your chosen timezone to /etc/localtime. In my case is Sofia, Bulgaria:
+Link your chosen timezone to **`/etc/localtime`**. In my case, it’s Sofia, Bulgaria:
 
 ```bash
 ln -sf /usr/share/zoneinfo/Europe/Sofia /etc/localtime
@@ -388,48 +409,120 @@ ln -sf /usr/share/zoneinfo/Europe/Sofia /etc/localtime
 Set the hardware clock to UTC:
 ```bash
 
-hwclock --systohc --utc
+hwclock --systohc
 ```
 
 *This ensures your system clock is in sync with the hardware clock and consistent across reboots.*
 
-**Virtual Console (Keyboard & Font Configuration)**
+**Install Essential Packages**
 
-Configure the keyboard layout and (optionally) the font for your TTY environment:
-```bash
-cat <<EOF > /etc/vconsole.conf
+Before we proceed, let’s install a few essential packages using **pacman**:
+
+```
+pacman -Syu sudo which man-db man-pages texinfo amd-ucode vim
+```
+
+Here’s a brief explanation of each package:
+
+- **sudo**: A tool that allows a permitted user to execute a command as the superuser or another user, as specified by the security policy.
+- **which**: A utility that shows the full path of shell commands. It’s useful to find where programs are installed.
+- **man-db**: A database used by the **man** command to display manual pages for various commands and programs.
+- **man-pages**: A collection of manual pages for Unix/Linux commands and system calls, providing help and documentation directly in the terminal.
+- **texinfo**: A documentation system that enables you to create formatted info files, used for software documentation.
+- **amd-ucode**: Microcode updates for AMD processors, which can help improve system stability and fix hardware-level bugs.
+- **vim**: A highly configurable text editor, used for editing system configuration files (and coding) in a terminal.
+
+**Configure the keyboard layout and (optionally) the    font for your TTY environment**:
+
+```
+vim /etc/vconsole.conf
+```
+
+Add the following content to the file:
+
+```
 KEYMAP=us
 FONT=latarcyrheb-sun32
-EOF
 ```
 
-*You can omit the FONT line or change KEYMAP=us to another layout if you prefer a different keymap.*
+*You can omit the `FONT` line or change `KEYMAP=us` to another layout if you prefer a different keymap.*
 
-**Set Hostname**
+------
 
-Assign a name to your machine. In my case, it is:
-```bash
-cat <<EOF > /etc/hostname
+### **Set Hostname**
+
+To assign a name to your machine, open the `/etc/hostname` file in **vim**:
+
+```
+vim /etc/hostname
+```
+
+Enter your hostname, for example:
+
+```
 ryan
-EOF
 ```
 
-**Configure /etc/hosts**
-```bash
-cat <<EOF > /etc/hosts
-127.0.0.1	localhost
-::1		    localhost
-127.0.1.1	ryan.localdomain ryan
-EOF
+------
+
+### **Configure `/etc/hosts`**
+
+Open the `/etc/hosts` file using **vim**:
+
+```
+vim /etc/hosts
 ```
 
-*Replace ryan with your actual hostname if you chose a different one above.*
+Add the following content:
 
-Before configuring initramfs, I prefer to use vim as my text editor. Since I haven’t installed it yet, I’ll do that now:
-```bash
-
-pacman -Sy vim
 ```
+127.0.0.1    localhost
+::1          localhost
+127.0.1.1    ryan.localdomain ryan
+```
+
+*Replace "ryan" with your actual hostname if you chose a different one above.*
+
+### **Network Setup**
+
+We will use `systemd-networkd` for managing network interfaces and `systemd-resolved` for DNS resolution, providing a minimal and native systemd-based networking setup. These components were already installed during the **pacstrap** step, so we can now enable and configure the services.
+
+**Enable the necessary services**:
+
+```
+systemctl enable systemd-networkd.service
+systemctl enable systemd-resolved.service
+```
+
+**Edit the network configuration file**:
+
+```
+vim /etc/systemd/network/20-wired.network
+```
+
+Add the following content:
+
+```
+[Match]
+Name=enp7s0
+
+[Network]
+DHCP=yes
+```
+
+*Make sure to replace `enp7s0` with the actual name of your network interface. You can find it by running:*
+
+```
+ip link
+```
+
+**Link the DNS resolver file**:
+
+```
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+```
+
+This will set up DHCP for the network interface and ensure proper DNS resolution with `systemd-resolved`.
 
 **Mkinitcpio**
 
@@ -441,7 +534,7 @@ mkinitcpio is a utility used to create the initial RAM filesystem (initramfs) �
 
 First, make sure the lvm2 package is installed:
 ```bash
-pacman -S lvm2
+pacman -Syu lvm2
 ```
 Open the configuration file:
 ```bash
@@ -451,10 +544,23 @@ vim /etc/mkinitcpio.conf
 
 Locate the `HOOKS` line and make sure it looks like this:
 ```bash
-HOOKS=(base systemd microcode modconf kms keyboard sd-vconsole block sd-encrypt lvm2 filesystems fsck)
+HOOKS=(base systemd autodetect modconf kms keyboard sd-vconsole block sd-encrypt lvm2 filesystems fsck)
+```
+
+Configure the virtual console font in **`/etc/vconsole.conf`**:
+
+```
+vim /etc/vconsole.conf
+```
+
+Add the following:
+
+```
+FONT=latarcyrheb-sun32
 ```
 
 Finally, regenerate the initramfs:
+
 ```bash
 mkinitcpio -P
 ```
@@ -485,96 +591,146 @@ The command output should look like this:
 
 *Don’t worry about those two warnings, the XPS 13 doesn’t have any hardware on board that needs those drivers.*
 
-**Microcode**
+### **Bootloader Installation**
 
-Modern processors occasionally require microcode updates to fix hardware-level bugs and improve system stability. These updates are especially important on Linux, as they can prevent subtle issues like random crashes, freezes, or erratic behavior — particularly under load.
+**Exit chroot** and install the bootloader:
 
-Since my system is equipped with an AMD processor, I’ll be installing the AMD microcode package. If you use an Intel CPU instead, you should install `intel-ucode` instead.
-
-To install the AMD microcode package:
-```bash
-pacman -Sy amd-ucode
+```
+exit
+bootctl --esp-path=/mnt/boot install
 ```
 
-This package will automatically provide the necessary firmware to the kernel at boot time. The AMD microcode will be included in your initramfs or passed via your bootloader (depending on the setup in the next steps).
+If you encounter an error (due to a potential bug), follow the steps below to resolve it:
 
-## Setting Up the Bootloader
+**Fixing the bug (if any error occurs)**:
 
-`systemd-boot` is a simple, fast, and minimal UEFI boot manager that comes bundled with systemd. Unlike GRUB, it doesn't require complex configuration or scripts — instead, you define boot entries as plain text files.
+Reformat the EFI partition and reinstall the bootloader:
 
-It works perfectly for UEFI systems and integrates seamlessly with setups involving LUKS, LVM, and microcode.
+```
+mkfs.fat -F32 /dev/nvme0n1p1
+mount /dev/nvme0n1p1 /mnt/boot
+bootctl --esp-path=/mnt/boot install
+```
 
-**Install systemd-boot to the EFI Partition**
+**Chroot into the new system** and install the bootloader again:
 
-Since your /boot partition is mounted at /mnt/boot, and you're already chrooted into /mnt, run:
-```bash
+```
+arch-chroot /mnt
 bootctl install
 ```
 
-This installs systemd-boot to your EFI system partition and creates /boot/loader.
+### **Configure the Loader**
 
-**Configure the Loader**
+**Create the loader configuration file** using **vim**:
 
-Create the loader configuration file:
-```bash
-cat <<EOF > /boot/loader/loader.conf
+```
+vim /boot/loader/loader.conf
+```
+
+Add the following content:
+
+```
 default arch
 timeout 3
 editor 0
-EOF
 ```
-- default arch → sets the default boot entry (we'll create arch.conf next)
-- timeout 3 → wait 3 seconds before auto-booting
-- editor 0 → disables on-boot edit prompt (you can set this to 1 for debugging)
 
-**Create the Boot Entry**
+- `default arch`: Sets **Arch Linux** as the default boot entry.
+- `timeout 3`: Waits for 3 seconds before automatically booting.
+- `editor 0`: Disables the on-boot edit prompt (set to `1` if you want to enable it for debugging purposes).
 
-The boot entry tells systemd-boot exactly how to start your Arch Linux system: which kernel to load, which initramfs to use, and most importantly — how to unlock your encrypted volumes and find your root filesystem.
+------
 
-Since this setup uses two encrypted disks — one for the root volume (/) and another for the extended LVM that includes /home — we must explicitly specify both UUIDs in the boot entry. This is critical: if you omit one, the system won’t know how to unlock both encrypted containers and boot will fail.
+### **Create the Boot Entry**
 
-**How to Find Your UUIDs**
+The boot entry tells **systemd-boot** how to start your Arch Linux system. It defines:
 
-You can list all available partition UUIDs using:
-```bash
+- Which kernel to load
+- Which initramfs to use
+- How to unlock encrypted volumes and mount the root filesystem
 
+Since this setup uses **two encrypted disks** (one for the root volume `/` and another for the extended LVM that includes `/home`), you need to explicitly specify both UUIDs in the boot entry. It is **critical** to specify both UUIDs; if you omit one, the system will not know how to unlock both encrypted containers, and booting will fail.
+
+------
+
+### **How to Find Your UUIDs**
+
+First, use the `blkid` command to list the UUIDs of your partitions:
+
+```
 blkid
 ```
 
-Look for lines like these (example output):
-```bash
+Example output (you will have something similar):
+
+```
 /dev/nvme0n1p2: UUID="11111111-aaaa-bbbb-cccc-111111111111" TYPE="crypto_LUKS"
 /dev/nvme1n1p1: UUID="22222222-dddd-eeee-ffff-222222222222" TYPE="crypto_LUKS"
 ```
 
-These UUIDs will be used in your rd.luks.name kernel parameters.
+**Copy the UUIDs** into the boot entry using **vim**:
 
-This is what your /boot/loader/entries/arch.conf should look like when using two LUKS-encrypted disks — one for the root volume and another for /home, both inside the same LVM group:
-```bash
+Open the **arch.conf** file in **vim**:
 
-mkdir -p /boot/loader/entries
-cat <<EOF > /boot/loader/entries/arch.conf
+```
+vim /boot/loader/entries/arch.conf
+```
+
+**Use vim to insert the UUIDs** into the `options` line:
+
+- Press `:` to enter command mode in vim.
+- Type `.!blkid` and press **Enter**. This command will output the UUIDs of your partitions directly into the vim buffer.
+
+```
+:.!blkid
+```
+
+This will append the result of `blkid` directly into the vim editor. You will see output like:
+
+```
+/dev/nvme0n1p2: UUID="11111111-aaaa-bbbb-cccc-111111111111" TYPE="crypto_LUKS"
+/dev/nvme1n1p1: UUID="22222222-dddd-eeee-ffff-222222222222" TYPE="crypto_LUKS"
+```
+
+**Copy the relevant UUIDs**:
+
+- Now, simply copy the **UUIDs** from the `blkid` output (in this case, `11111111-aaaa-bbbb-cccc-111111111111` and `22222222-dddd-eeee-ffff-222222222222`).
+
+**Edit the `options` line** to specify the correct UUIDs for your LUKS-encrypted partitions.
+
+Update the `options` line to look like this, replacing the UUIDs you copied:
+
+```
+options rd.luks.name=11111111-aaaa-bbbb-cccc-111111111111=cryptlvm1 rd.luks.name=22222222-dddd-eeee-ffff-222222222222=cryptlvm2 root=/dev/cryptlvm1/root rw
+```
+
+**Remove the `blkid` output** (optional):
+
+After copying the UUIDs, you can delete the unnecessary `blkid` output in vim. Simply press `d` to delete lines in normal mode or use `dd` to delete the whole line.
+
+------
+
+### **Create the Boot Entry File**
+
+Add the following content:
+
+```
 title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /amd-ucode.img
 initrd  /initramfs-linux.img
 options rd.luks.name=11111111-aaaa-bbbb-cccc-111111111111=cryptlvm1 rd.luks.name=22222222-dddd-eeee-ffff-222222222222=cryptlvm2 root=/dev/cryptlvm1/root rw
-EOF
 ```
 
-**Explanation of Key Options:**
+------
 
-```bash
-rd.luks.name=UUID=NAME
-→ Unlocks the LUKS container with the given UUID and maps it to /dev/mapper/NAME
+### **Explanation of Key Options**
 
-In my case:
-
-cryptlvm1 → first disk (/dev/nvme0n1p2) containing the root volume
-cryptlvm2 → second disk (/dev/nvme1n1p1) contributing to the LVM volume group
-root=/dev/cryptlvm1/root → Specifies the root filesystem inside the unlocked volume
-rw → Mounts the root filesystem as read-write
-```
+- **`rd.luks.name=UUID=NAME`**: This option unlocks the LUKS container using the specified UUID and maps it to `/dev/mapper/NAME`.
+  - `cryptlvm1` → First disk (`/dev/nvme0n1p2`) containing the root volume.
+  - `cryptlvm2` → Second disk (`/dev/nvme1n1p1`) contributing to the LVM volume group.
+- **`root=/dev/cryptlvm1/root`**: Specifies the root filesystem inside the unlocked volume.
+- **`rw`**: Mounts the root filesystem as **read-write**.
 
 Now is time to set a root password:
 ```bash
@@ -583,69 +739,62 @@ passwd
 
 You’ll be prompted to enter and confirm the password.
 
-Install sudo:
-```bash
-pacman -Sy sudo
+### **Create a New User and Set Password**
+
+Create a new user and add them to the **wheel** group:
+
+```
+useradd -G wheel -m simeon
+passwd simeon
 ```
 
-sudo lets non-root users execute administrative commands securely.
+This will create a user **simeon** and allow administrative access via **sudo**.
 
-Then set it as the default editor for the session:
-```bash
+------
 
+### **Set the Default Editor**
+
+Set **vim** as the default editor for the session:
+
+```
 export EDITOR=vim
 ```
-Configure sudo Permissions via visudo
-Now safely edit the sudoers file:
-```bash
 
+------
+
+### **Configure sudo Permissions via visudo**
+
+To allow the user **simeon** to execute administrative commands, safely edit the sudoers file with **visudo**:
+
+```
 visudo
 ```
-This will open `/etc/sudoers` in vim.
-*In Vim:*
-Press `/` and type wheel → this searches for the correct line
-Use `n` to jump to:
-```bash
 
-#%wheel ALL=(ALL:ALL) ALL
-```
+This will open the **`/etc/sudoers`** file in **vim**.
 
-Press `i` to enter insert mode, then remove the `#`. Press Esc, type `:wq`, and press Enter to save and exit.
+In **vim**:
+
+1. Press `/` and type `wheel` to search for the line.
+
+2. Use `n` to jump to:
+
+   ```
+   #%wheel ALL=(ALL:ALL) ALL
+   ```
+
+3. Press `i` to enter insert mode, then **remove the `#`** at the beginning of the line.
+
+4. Press **Esc**, type `:wq`, and press **Enter** to save and exit.
+
 This line:
-`%wheel ALL=(ALL:ALL) ALL`
-allows users in the `wheel` group to run any command with `sudo`, which is exactly what you want for administrative tasks.
-*visudo also checks for syntax errors before saving, which prevents breaking sudo access.*
 
-## Enabling Networking with systemd
-
-In this guide, we’re using `systemd-networkd` for managing network interfaces and `systemd-resolved` for DNS resolution — a minimal and native systemd-based networking setup. We already installed both components during the pacstrap step. So now, all we need to do is enable and configure the services:
-
-```bash
-systemctl enable systemd-networkd
-systemctl enable systemd-resolved
+```
+%wheel ALL=(ALL:ALL) ALL
 ```
 
-Then link the DNS resolver file:
-```bash
-ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-```
+Allows users in the **`wheel`** group (including **simeon**) to run any command with **sudo**, granting administrative privileges.
 
-Create a Basic DHCP Configuration for Ethernet
-```bash
-cat <<EOF > /etc/systemd/network/20-wired.network
-[Match]
-Name=enp*
-
-[Network]
-DHCP=yes
-EOF
-```
-
-*Adjust* Name=enp* to match your actual interface. You can find it by running:
-```bash
-
-ip link
-```
+*Note: `visudo` checks for syntax errors, preventing issues that might break **sudo** access.*
 
 **Exit the Chroot and Reboot**
 
@@ -653,6 +802,7 @@ Your system is now fully configured. The final step is to leave the chroot envir
 
 Now type `exit` and unmount all mounted partitions. 
 Use `-R` to recursively unmount everything under `/mnt`:
+
 ```bash
 
 umount -R /mnt
@@ -666,9 +816,11 @@ Make sure to remove the USB stick or ISO from which you booted the installer, so
 Once the system boots, unlocks the encrypted disks, and logs you into your shell:
 
 Log in as your user.
-Then check for IP address with `ip a`.
-You should see your interface (e.g. enp1s0) with an IP assigned.
+
+Then check for IP address with `ip a`. You should see your interface (e.g. `enp1s0`) with an IP assigned.
+
 Test internet connection:
+
 ```bash
 
 ping -c 3 archlinux.org
@@ -680,8 +832,8 @@ Congratulations — you now have a clean, secure, fully-encrypted Arch Linux ins
 
 **Conclusion**
 
-From here on, it’s entirely up to you how to shape your system — whether to keep it minimal or install a full desktop environment.
+At this point, your system is fully set up and ready for customization. Whether you prefer a minimal setup or want to install a full desktop environment, the choice is yours.
 
-Until recently, I used dwm as my only window manager — fast, tiling, and highly configurable. But I decided to move away from X11, the legacy display server, and switch to Wayland, a modern protocol that offers better performance, security, and smooth rendering.
+I currently use a **customized Hyprland** environment on [**Omarchy**](https://omarchy.org/), which provides a fast, efficient, and highly tailored workspace. The beauty of Arch Linux is its flexibility, allowing you to create an environment that fits your exact needs, whether you opt for lightweight setups or a more feature-rich desktop experience.
 
-So I chose to try something new — and installed the COSMIC desktop, which for me has been nothing short of amazing.
+Now that your system is configured, you have a solid base to explore and experiment with various tools, applications, and configurations. The possibilities are endless!
