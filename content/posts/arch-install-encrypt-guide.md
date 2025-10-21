@@ -361,6 +361,26 @@ UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  /home   ext4    rw,relatime          
 
 *Replace the placeholder UUIDs with actual values from blkid if you ever need to regenerate this file manually.*
 
+**Install Essential Packages**
+
+Before we proceed, let’s install a few essential packages using **pacman**:
+
+```
+pacman -Syu sudo which man-db man-pages texinfo amd-ucode vim
+```
+
+Here’s a brief explanation of each package:
+
+- **sudo**: A tool that allows a permitted user to execute a command as the superuser or another user, as specified by the security policy.
+- **which**: A utility that shows the full path of shell commands. It’s useful to find where programs are installed.
+- **man-db**: A database used by the **man** command to display manual pages for various commands and programs.
+- **man-pages**: A collection of manual pages for Unix/Linux commands and system calls, providing help and documentation directly in the terminal.
+- **texinfo**: A documentation system that enables you to create formatted info files, used for software documentation.
+- **amd-ucode**: Microcode updates for AMD processors, which can help improve system stability and fix hardware-level bugs.
+- **vim**: A highly configurable text editor, used for editing system configuration files (and coding) in a terminal.
+
+
+
 **Locale**
 
 Locales are used by glibc and other locale-aware programs or libraries for rendering text, correctly displaying regional monetary values, time and date formats, alphabetic idiosyncrasies, and other locale-specific standards.
@@ -410,24 +430,6 @@ hwclock --systohc
 ```
 
 *This ensures your system clock is in sync with the hardware clock and consistent across reboots.*
-
-**Install Essential Packages**
-
-Before we proceed, let’s install a few essential packages using **pacman**:
-
-```
-pacman -Syu sudo which man-db man-pages texinfo amd-ucode vim
-```
-
-Here’s a brief explanation of each package:
-
-- **sudo**: A tool that allows a permitted user to execute a command as the superuser or another user, as specified by the security policy.
-- **which**: A utility that shows the full path of shell commands. It’s useful to find where programs are installed.
-- **man-db**: A database used by the **man** command to display manual pages for various commands and programs.
-- **man-pages**: A collection of manual pages for Unix/Linux commands and system calls, providing help and documentation directly in the terminal.
-- **texinfo**: A documentation system that enables you to create formatted info files, used for software documentation.
-- **amd-ucode**: Microcode updates for AMD processors, which can help improve system stability and fix hardware-level bugs.
-- **vim**: A highly configurable text editor, used for editing system configuration files (and coding) in a terminal.
 
 **Configure the keyboard layout and (optionally) the    font for your TTY environment**:
 
@@ -542,18 +544,6 @@ vim /etc/mkinitcpio.conf
 Locate the `HOOKS` line and make sure it looks like this:
 ```bash
 HOOKS=(base systemd autodetect modconf kms keyboard sd-vconsole block sd-encrypt lvm2 filesystems fsck)
-```
-
-Configure the virtual console font in **`/etc/vconsole.conf`**:
-
-```
-vim /etc/vconsole.conf
-```
-
-Add the following:
-
-```
-FONT=latarcyrheb-sun32
 ```
 
 Finally, regenerate the initramfs:
