@@ -1,7 +1,8 @@
-baseurl = "https://www.simeonivanov.org"
+baseURL = "https://simeonivanov.org/"
 languageCode = "en-us"
 theme = "hugo-theme-terminal"
 pagination.pagerSize = 5
+canonifyURLs = true
 
 [markup.goldmark.renderer]
 unsafe = true
@@ -38,14 +39,16 @@ identifier = "email"
 name = "[Email]"
 url = "mailto:s.ivanov1994@proton.me"
 weight = 1
+
 [[languages.en.menu.main]]
 identifier = "github"
 name = "[GitHub]"
 url = "https://github.com/sivanov1994"
-weight = 1
+weight = 2
+
 [[languages.en.menu.main]]
-identier = "linkedIn"
+identifier = "linkedIn"
 name = "[LinkedIn]"
 url = "https://www.linkedin.com/in/simeonivanov1994/"
-weight = 2
+weight = 3
 
