@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#1a1a1a" rx="80"/>
+  
+  <!-- Terminal window -->
+  <rect x="64" y="96" width="384" height="320" fill="#0a0a0a" rx="12"/>
+  
+  <!-- Title bar -->
+  <rect x="64" y="96" width="384" height="48" fill="#2d2d2d" rx="12"/>
+  <rect x="64" y="132" width="384" height="12" fill="#2d2d2d"/>
+  
+  <!-- Traffic light buttons -->
+  <circle cx="96" cy="120" r="8" fill="#ff5f56"/>
+  <circle cx="124" cy="120" r="8" fill="#ffbd2e"/>
+  <circle cx="152" cy="120" r="8" fill="#27c93f"/>
+  
+  <!-- Terminal prompt and cursor -->
+  <text x="88" y="200" font-family="monospace" font-size="48" fill="#3b82f6" font-weight="bold">$</text>
+  <rect x="128" y="168" width="24" height="48" fill="#3b82f6">
+    <animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Code lines -->
+  <rect x="88" y="256" width="180" height="12" fill="#666" rx="2"/>
+  <rect x="88" y="288" width="240" height="12" fill="#666" rx="2"/>
+  <rect x="88" y="320" width="160" height="12" fill="#666" rx="2"/>
+</svg>

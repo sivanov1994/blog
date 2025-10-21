@@ -1,0 +1,6 @@
+<ul>
+   {{ range .Site.Data.publications }}
+   <li>{{ .authors }} ({{ .year }}). {{ .title }}. <em>{{ .journal }}</em> {{ .volume }}, {{ .pages }} {{ with .link }} <a href={{ . }}>[Link]</a>{{ end }}</li>
+{{ end }}
+</ul>
+

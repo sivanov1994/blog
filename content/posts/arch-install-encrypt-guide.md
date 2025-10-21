@@ -1,10 +1,7 @@
 ---
 title: "How to Install Arch Linux with Full Disk Encryption and LVM Using systemd-boot"
 date: 2025-05-05
-description: "A complete step-by-step guide to installing Arch Linux with full disk encryption (LUKS), LVM, and systemd-boot across two NVMe drives."
-tags: ["arch linux", "encryption", "luks", "lvm", "systemd-boot", "installation"]
-categories: ["linux", "security"]
-draft: false
+topics: ["arch linux", "security"]
 ---
 This guide describes how to install Arch Linux with full disk encryption, Logical Volume Management (LVM), and the minimalist systemd-boot bootloader. The setup uses two NVMe drives, as this reflects my specific hardware configuration. If you're using only one drive, the process remains mostly the same—just adapt the LUKS and LVM steps accordingly.
 
@@ -15,8 +12,8 @@ Let’s get started.
 - CPU: AMD Ryzen 9 5900X
 - GPU: AMD Radeon RX 6900 XT
 - Memory: 32GB
-- Two NVMe drives, each 1TB  
-- UEFI-enabled system (BIOS must support UEFI)  
+- Two NVMe drives, each 1TB
+- UEFI-enabled system (BIOS must support UEFI)
 
 ### Preparing the Terrain
 
@@ -30,10 +27,10 @@ Here’s how the output looked on my machine:
 
 ```
 NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
-sdb           8:16   1 14.9G  0 disk 
+sdb           8:16   1 14.9G  0 disk
 ├─sdb1        8:17   1  650M  0 part /run/media/user/ARCH_202505
-├─sdb2        8:18   1   64M  0 part 
-└─sdb3        8:19   1  300K  0 part 
+├─sdb2        8:18   1   64M  0 part
+└─sdb3        8:19   1  300K  0 part
 ```
 
 My USB drive is 16GB and recognized as `/dev/sdb`. Now it’s time to write the ISO image onto it using `dd`. **Caution**: This command will irrevocably erase all data on the drive, so double-check the device path before proceeding.
@@ -800,7 +797,7 @@ Allows users in the **`wheel`** group (including **simeon**) to run any command 
 
 Your system is now fully configured. The final step is to leave the chroot environment, unmount all filesystems, and reboot into your new encrypted Arch Linux installation.
 
-Now type `exit` and unmount all mounted partitions. 
+Now type `exit` and unmount all mounted partitions.
 Use `-R` to recursively unmount everything under `/mnt`:
 
 ```bash

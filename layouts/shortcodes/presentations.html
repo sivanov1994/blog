@@ -1,0 +1,7 @@
+<ul>
+    {{ range .Site.Data.presentations }}
+    <li>{{ .authors }} ({{ .date }}) {{ .title }}. {{ .conference }} {{ with .link }}
+        <a href={{ . }}>[Link]</a>{{ end }}</li>
+    {{ end }}
+</ul>
+

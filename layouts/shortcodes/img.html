@@ -1,0 +1,7 @@
+<center>
+    <img {{ with .Get "src" }} src="{{ . }}"{{ end }}
+         {{ with .Get "width" }} width="{{ . }}"{{ end }}
+        {{ with .Get "max-width" }} style=" max-width:{{ . }}" {{ end }}
+    >
+</center>
+

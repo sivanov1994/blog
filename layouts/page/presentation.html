@@ -1,0 +1,6 @@
+<ul>
+  {{ range sort .Site.Data.presentations "date" }}
+  <li><a href={{ .link }}>{{ .title }} ({{ .author }})</a></li>
+  {{ end }}
+</ul>
+
