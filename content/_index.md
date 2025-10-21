@@ -5,6 +5,21 @@ date:
 layout: index
 ---
 
+<style>
+.figlet-banner {
+    display: block !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    white-space: pre !important;
+    color: #3b82f6 !important;
+    background: transparent !important;
+    margin: 20px 0 !important;
+    padding: 10px !important;
+    overflow-x: auto !important;
+    border: 1px solid #3b82f6;
+}
+</style>
 <pre class="figlet-banner">
   ____  _                            ___
  / ___|(_)_ __ ___   ___  ___  _ __ |_ _|_   ____ _ _ __   _____   __
