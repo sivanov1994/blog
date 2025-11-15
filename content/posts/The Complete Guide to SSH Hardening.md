@@ -5,12 +5,11 @@ lastmod: 2025-11-14
 topics: ["ssh", "security"]
 ---
 
-
 ## Overview
 
 SSH (Secure Shell) is the foundation of remote server administration, yet its default configuration leaves significant security gaps. A properly hardened SSH setup is not about security through obscurity—it's about implementing defense-in-depth with modern cryptographic standards, strict authentication policies, and comprehensive monitoring.
 
----
+------
 
 ## Understanding the Threat Model
 
@@ -23,7 +22,7 @@ Before implementing security measures, it's essential to understand what we're p
 - **Privilege escalation**: Gaining unauthorized root access
 - **Session hijacking**: Taking over active SSH sessions
 
----
+------
 
 ## Prerequisites
 
@@ -34,9 +33,15 @@ This guide assumes you have:
 - A backup access method (console access or alternative SSH configuration)
 - OpenSSH 7.4 or newer (check with `ssh -V`)
 
-> [!warning] Critical Warning Always maintain a backup session when modifying SSH configuration. A misconfiguration can prevent you from accessing your server.
+------
 
----
+> **⚠️ Critical Warning**
+>
+>  Always maintain a backup session when modifying SSH configuration. A misconfiguration can prevent you from accessing your server.
+
+------
+
+------
 
 ## Step 1: Preparation and Backup
 
@@ -56,7 +61,7 @@ sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.backup.$(date +%F)
 # This ensures you can revert changes if something breaks
 ```
 
----
+------
 
 ## Step 2: Core SSH Configuration
 
@@ -92,7 +97,13 @@ Port 22
 UsePrivilegeSeparation sandbox
 ```
 
-> [!note] Note on Port Changes While some guides recommend changing the default port, this provides minimal security benefit. Attackers can easily port-scan your server. Instead, focus on proper authentication, rate limiting, and firewall rules.
+------
+
+> **📝 Note **
+>
+>  While some guides recommend changing the default port, this provides minimal security benefit. Attackers can easily port-scan your server. Instead, focus on proper authentication, rate limiting, and firewall rules.
+
+------
 
 ### Authentication Configuration
 
@@ -270,7 +281,7 @@ sudo chmod 644 /etc/ssh/banner.txt
 sudo chown root:root /etc/ssh/banner.txt
 ```
 
----
+------
 
 ## Step 3: Validate Configuration
 
@@ -290,9 +301,15 @@ Common validation errors:
 - **Bad configuration option**: Usually a typo or deprecated option
 - **Missing required parameter**: Add the required configuration
 
-> [!important] Only proceed if validation passes without errors.
+------
 
----
+> **✅ Important**
+>
+>  Only proceed if validation passes without errors.
+
+------
+
+------
 
 ## Step 4: SSH Key-Based Authentication
 
@@ -360,7 +377,13 @@ ssh -i ~/.ssh/id_ed25519_server user@server_ip
 # If successful, you should log in without a password prompt
 ```
 
-> [!warning] Critical Only disable password authentication after confirming key-based login works.
+------
+
+> **⚠️ Critical**
+>
+>  Only disable password authentication after confirming key-based login works.
+
+------
 
 ### SSH Key Management Best Practices
 
@@ -420,7 +443,7 @@ grep "compromised_key_comment" /home/username/.ssh/authorized_keys
 logger "SSH key revoked for user username - $(date)"
 ```
 
----
+------
 
 ## Step 5: Create SSH Access Group
 
@@ -440,7 +463,7 @@ groups $USER
 grep sshusers /etc/group
 ```
 
----
+------
 
 ## Step 6: Apply Configuration Changes
 
@@ -455,9 +478,15 @@ sudo systemctl status sshd
 sudo ss -tlnp | grep sshd
 ```
 
-> [!warning] Important Do not close your current SSH session yet. Open a new terminal and test the connection first.
+------
 
----
+> **⚠️ Important**
+>
+>  Do not close your current SSH session yet. Open a new terminal and test the connection first.
+
+------
+
+------
 
 ## Step 7: Firewall Configuration
 
@@ -509,7 +538,7 @@ sudo firewall-cmd --reload
 sudo firewall-cmd --list-all
 ```
 
----
+------
 
 ## Step 8: Fail2Ban - Automated Intrusion Prevention
 
@@ -529,7 +558,6 @@ sudo systemctl enable --now fail2ban
 ```
 
 ### Configuration
-
 
 ```bash
 # Create a local configuration file (overrides defaults)
@@ -594,7 +622,7 @@ sudo fail2ban-client set sshd unbanip 203.0.113.10
 sudo fail2ban-client get sshd banip
 ```
 
----
+------
 
 ## Step 9: Two-Factor Authentication (Optional but Recommended)
 
@@ -622,7 +650,13 @@ sudo dnf install google-authenticator -y
 sudo pacman -S libpam-google-authenticator
 ```
 
-> [!note] Despite the package name "google-authenticator", this implements the open **TOTP standard (RFC 6238)** and works with any compatible authenticator app.
+------
+
+> **📝 Note**
+>
+>  Despite the package name "google-authenticator", this implements the open **TOTP standard (RFC 6238)** and works with any compatible authenticator app.
+
+------
 
 ### Choosing an Authenticator App
 
@@ -641,7 +675,13 @@ Select any TOTP-compatible app for your phone or desktop:
 - **Microsoft Authenticator** - Enterprise features
 - **Google Authenticator** - Simple but lacks backup features
 
-> [!tip] Important Choose an app with backup/export functionality to avoid lockout if you lose your device.
+------
+
+> **💡 Important**
+>
+>  Choose an app with backup/export functionality to avoid lockout if you lose your device.
+
+------
 
 ### Configuring 2FA for Your User
 
@@ -666,7 +706,6 @@ After running the command:
 ### Configuring SSH for 2FA
 
 #### Step 1: Configure PAM
-
 
 ```bash
 # Edit PAM configuration for SSH
@@ -713,14 +752,20 @@ sudo systemctl restart sshd
 
 ### Testing Your Configuration
 
-> [!warning] Critical Test in a new session before closing your current one!
+------
+
+> **⚠️ Critical**
+>
+>  Test in a new session before closing your current one!
+
+------
 
 1. Keep your current SSH session **open** (safety measure)
 2. Open a **new terminal window**
 3. SSH to the server: `ssh user@server`
 4. You'll be prompted for:
-    - SSH key passphrase (if your key is encrypted)
-    - Verification code from your authenticator app
+   - SSH key passphrase (if your key is encrypted)
+   - Verification code from your authenticator app
 5. Enter the 6-digit code from your app
 6. If successful, you're now using 2FA!
 
@@ -778,9 +823,15 @@ ssh-copy-id -i ~/.ssh/id_yubikey.pub user@server
 
 Hardware tokens provide phishing-resistant authentication and are recommended for high-security environments. Consider purchasing two tokens (primary and backup).
 
-> [!warning] Always maintain an alternative access method (console access, IPMI, or backup SSH configuration) before enforcing 2FA. Losing your 2FA device without backup codes will lock you out of your server.
+------
 
----
+> **⚠️ Warning**
+>
+>  Always maintain an alternative access method (console access, IPMI, or backup SSH configuration) before enforcing 2FA. Losing your 2FA device without backup codes will lock you out of your server.
+
+------
+
+------
 
 ## Step 10: Monitoring and Maintenance
 
@@ -873,7 +924,7 @@ auth,authpriv.* @@log-server.example.com:514
 sudo systemctl restart rsyslog
 ```
 
----
+------
 
 ## Step 11: SSH Client Hardening
 
@@ -978,7 +1029,7 @@ ssh -i ~/.ssh/specific_key user@host
 ssh -o ForwardAgent=no user@untrusted-host
 ```
 
----
+------
 
 ## Step 12: Advanced Access Control with Match Blocks
 
@@ -1038,7 +1089,7 @@ Match User backup
 - **Defaults**: Rules outside Match blocks apply to all connections not matching
 - **Negation**: Use `!` to exclude patterns (e.g., `Match Address !10.0.0.0/8`)
 
----
+------
 
 ## Step 13: Automated Compliance Checking
 
@@ -1178,7 +1229,7 @@ sudo crontab -e
 # 0 6 * * * /usr/local/bin/ssh-security-check.sh
 ```
 
----
+------
 
 ## Step 14: Advanced Security Measures
 
@@ -1262,7 +1313,7 @@ The most secure approach for production:
 ListenAddress 10.8.0.1
 ```
 
----
+------
 
 ## Troubleshooting Common Issues
 
@@ -1336,7 +1387,7 @@ sudo fail2ban-client get sshd logpath
 sudo fail2ban-regex /var/log/auth.log /etc/fail2ban/filter.d/sshd.conf
 ```
 
----
+------
 
 ## Performance Considerations
 
@@ -1360,16 +1411,93 @@ ControlPath ~/.ssh/sockets/%r@%h-%p
 ControlPersist 600
 ```
 
----
+------
+
+## Compliance and Standards
+
+This guide aligns with:
+
+- **CIS Benchmarks**: Level 1 & Level 2 SSH hardening guidelines
+- **NIST SP 800-53**: Access Control (AC) and Identification & Authentication (IA) requirements
+- **PCI DSS**: Requirement 2.3 - Encrypt all non-console administrative access
+- **HIPAA**: Technical safeguards for access control
+- **Mozilla SSH Guidelines**: Modern cryptographic standards
+
+------
+
+## Security Checklist
+
+### Core Configuration
+
+-  Backed up original `sshd_config`
+-  Set `Protocol 2` explicitly
+-  Configured modern `HostKey` algorithms (Ed25519 preferred)
+-  Set `Compression delayed` or disabled
+-  Disabled root login (`PermitRootLogin no`)
+-  Disabled password authentication
+-  Configured modern cryptographic algorithms (KexAlgorithms, Ciphers, MACs)
+-  Set session timeouts (ClientAliveInterval/CountMax)
+-  Disabled unnecessary features (X11, agent forwarding, TCP forwarding)
+
+### Access Control
+
+-  Created SSH access group
+-  Implemented group-based access control (`AllowGroups`)
+-  Added authorized users to SSH group
+-  Set `StrictModes yes`
+
+### Authentication
+
+-  Generated Ed25519 SSH keys with strong passphrases
+-  Set correct permissions on keys and directories
+-  Deployed public keys to servers
+-  Tested key-based authentication
+-  (Optional) Configured 2FA/MFA
+
+### Defense Layer
+
+-  Configured firewall with rate limiting
+-  Installed and configured Fail2Ban
+-  Set appropriate ban times and retry limits
+
+### Monitoring
+
+-  Set `LogLevel VERBOSE`
+-  Configured centralized logging (production)
+-  Created legal banner
+-  Set up automated security checks
+
+### Client Security
+
+-  Created hardened `~/.ssh/config`
+-  Configured connection multiplexing
+-  Set secure client-side cryptography
+
+### Testing and Validation
+
+-  Tested configuration with `sshd -t`
+-  Ran ssh-audit scan
+-  Tested SSH login with new configuration
+-  Verified logging works
+-  Tested Fail2Ban blocking
+
+### Documentation
+
+-  Documented all configuration changes
+-  Created runbook for common issues
+-  Scheduled regular security audits
+-  Configured backup access method
+
+------
 
 ## Conclusion
 
 SSH hardening is a critical component of server security. By implementing these practices, you've established:
 
-✓ **Strong authentication** through key-based access and optional 2FA  
-✓ **Modern cryptography** resistant to current attacks  
-✓ **Defense-in-depth** with firewalls and intrusion prevention  
-✓ **Comprehensive monitoring** for detecting unauthorized access  
-✓ **Maintainable security** through group-based access control
+✓ **Strong authentication** through key-based access and optional 2FA
+ ✓ **Modern cryptography** resistant to current attacks
+ ✓ **Defense-in-depth** with firewalls and intrusion prevention
+ ✓ **Comprehensive monitoring** for detecting unauthorized access
+ ✓ **Maintainable security** through group-based access control
 
 Remember that security is an ongoing process. Regularly review logs, update software, audit your configuration with tools like ssh-audit, and stay informed about emerging threats.
