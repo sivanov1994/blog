@@ -1,0 +1,43 @@
+{{- partial "search_bar.html" -}}
+
+{{- range site.Data.rtwt.content.side.home -}}
+  <div class="side-content">
+    <h3>{{- .title -}}</h3>
+    {{- if .imagePath -}}
+      {{- if .imageHref -}}
+        <a href="{{- .imageHref -}}" target="_blank" rel="noopener noreferrer">
+          <img class="side-content-image" src="{{- .imagePath -}}" width="{{- default "80%" .imageWidth -}}" />
+        </a>
+      {{- else -}}
+        <img class="side-content-image" src="{{- .imagePath -}}" width="{{- default "80%" .imageWidth -}}" />
+      {{- end -}}
+    {{- end -}}
+    <p>{{- markdownify .content -}}</p>
+  </div>
+{{- end -}}
+
+{{- range $filter := site.Params.rtwt.side.home.taxonomies -}}
+  {{- with (index site.Taxonomies $filter) -}}
+    <h3>{{- $filter | title -}}</h3>
+    <ul class="taxonomy-list">
+    {{- $limit := site.Params.rtwt.side.home.countTaxonomy }}
+    {{- $i := $limit -}}
+
+    {{/* For some reason, using "range first N COLLECTION" doesn't work here */}}
+    {{- range (sort . ".Count" "desc") -}}
+      {{ $i = sub $i 1 }}
+      {{- if lt $i 0 -}}{{- break -}}{{- end -}}
+      <li>
+    <a class="tag" href="{{- .Page.Permalink -}}">
+      #{{- .Page.Title | lower -}}&nbsp<span class="text-sm dim">{{ .Count }}</span>
+    </a>
+      </li>
+    {{- end -}}
+      {{- if (gt (len .) $limit) -}}
+      <li>
+        <a href="{{- absURL $filter -}}">{{- i18n "see_all" -}}</a>
+      </li>
+      {{- end -}}
+    </ul>
+  {{- end -}}
+{{- end -}}

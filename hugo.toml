@@ -1,52 +1,109 @@
-baseURL = "https://simeonivanov.org/"
-languageCode = "en-us"
-theme = "hugo-theme-terminal"
-pagination.pagerSize = 5
-canonifyURLs = true
+baseurl = "https://simeonivanov.org/"
+title = "DevOps - Simeon Ivanov"
+header = "Simeon Ivanov"
+theme = "rusty-typewriter"
+languagecode = "en"
+defaultcontentlanguage = "en"
+
+[pagination]
+pagerSize = 20
+
+[markup.highlight]
+style = "github-dark"
 
 [markup.goldmark.renderer]
 unsafe = true
 
 [params]
-contentTypeName = "posts"
-showMenuItems = 3
-postsToShowOnIndex = 3
-fullWidthTheme = false
-centerTheme = true
+author = "Simeon Ivanov"
+keywords = "blog,developer,devops,security"
+avatarurl = "images/avatar.png"
+
+faviconSVG = "/img/favicon.svg"
+favicon_32 = "/img/favicon-32x32.png"
+favicon_16 = "/img/favicon-16x16.png"
+
+since = 2024
+
+enableTwemoji = true
+
+colorScheme = "dark"
+hidecolorschemetoggle = false
 
 [taxonomies]
+category = "categories"
+series = "series"
 tag = "tags"
-topic = "topics"
+author = "authors"
 
-[languages]
-[languages.en.params]
-title = "Simeon Ivanov"
-subtitle = ""
-keywords = ""
-copyright = "© Simeon Ivanov"
-menuMore = "Show more"
-readMore = "Read more"
-readOtherPosts = "Read other posts"
-
-[languages.en.params.logo]
-logoText = "Simeon Ivanov"
-logoHomeLink = "/"
-
-[languages.en.menu]
-[[languages.en.menu.main]]
-identifier = "email"
+# Social links
+[[params.social]]
 name = "Email"
-url = "mailto:s.ivanov1994@proton.me"
+icon = "fa-solid fa-envelope fa-2x"
 weight = 1
+url = "mailto:s.ivanov1994@proton.me"
 
-[[languages.en.menu.main]]
-identifier = "github"
-name = "GitHub"
-url = "https://github.com/sivanov1994"
-weight = 2
-
-[[languages.en.menu.main]]
-identifier = "linkedIn"
+[[params.social]]
 name = "LinkedIn"
+icon = "fa-brands fa-linkedin fa-2x"
+weight = 2
 url = "https://www.linkedin.com/in/simeonivanov1994/"
+
+[[params.social]]
+name = "GitHub"
+icon = "fa-brands fa-github fa-2x"
 weight = 3
+url = "https://github.com/sivanov1994"
+
+# Menu links
+[[menu.main]]
+name = "Blog"
+weight = 1
+url = "/posts/"
+[[menu.main]]
+name = "About"
+weight = 2
+url = "/about/"
+
+
+# rusty-typewriter theme settings
+[params.rtwt]
+sidePane = true
+countPageItems = 7
+searchPath = 'search'
+
+[params.rtwt.home]
+showBio = true
+showAuthorImg = true
+sidePaneTags = true
+showFeatured = true
+showRecent = true
+hideRecentWhenFeatured = true
+countRecent = 3
+
+[params.rtwt.side.home]
+sidePaneSticky = false
+taxonomies = ['tags']
+countTaxonomy = 5
+
+[params.rtwt.side.single]
+sidePaneSticky = false
+showDetails = true
+showTableOfContents = true
+showAttachments = false
+showRelated = true
+countRelated = 5
+
+[outputFormats]
+[outputFormats.SearchIndex]
+mediaType = "application/json"
+baseName = "searchindex"
+isPlainText = true
+notAlternative = true
+
+[mediaTypes]
+[mediaTypes."application/json"]
+suffixes = ["json"]
+
+[outputs]
+home = ["HTML", "RSS", "SearchIndex"]

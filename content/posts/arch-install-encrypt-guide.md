@@ -1,7 +1,10 @@
 ---
+date: 2025-05-05T00:00:00+00:00
+draft: false
 title: "How to Install Arch Linux with Full Disk Encryption and LVM Using systemd-boot"
-date: 2025-05-05
-topics: ["arch linux", "security"]
+description: "A complete guide to installing Arch Linux with LUKS encryption, LVM, and systemd-boot"
+authors: ["Simeon Ivanov"]
+tags: ["arch", "linux", "security"]
 ---
 This guide describes how to install Arch Linux with full disk encryption, Logical Volume Management (LVM), and the minimalist systemd-boot bootloader. The setup uses two NVMe drives, as this reflects my specific hardware configuration. If you're using only one drive, the process remains mostly the same—just adapt the LUKS and LVM steps accordingly.
 
@@ -272,10 +275,10 @@ mount /dev/cryptlvm1/root /mnt
 **Create and Mount the Home Directory**
 
 ```bash
-mount --mkdir /dev/crypt/home /mnt/home
+mount --mkdir /dev/cryptlvm1/home /mnt/home
 ```
 
-*Mount the EFI Boot Partition**
+**Mount the EFI Boot Partition**
 
 ```bash
 mount --mkdir /dev/nvme0n1p1 /mnt/boot
@@ -576,7 +579,7 @@ The command output should look like this:
 ==> Image generation successful
 ```
 
-*Don’t worry about those two warnings, the XPS 13 doesn’t have any hardware on board that needs those drivers.*
+*Don't worry about those two warnings - these are common firmware warnings that don't affect most modern systems.*
 
 ### **Bootloader Installation**
 
