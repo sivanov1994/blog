@@ -1,0 +1,40 @@
+name = "sivanov"
+license = "MIT"
+licenselink = "https://github.com/sivanov1994/blog/blob/main/LICENSE"
+description = "A minimal, dark Hugo theme — forked from PaperMod by Simeon Ivanov"
+homepage = "https://simeonivanov.org"
+
+tags = [
+  "responsive",
+  "blog",
+  "clean",
+  "minimal",
+  "dark",
+  "fast",
+  "search",
+  "seo",
+  "personal"
+]
+features = [
+  "single-column",
+  "blog",
+  "dark-default",
+  "table-of-contents",
+  "archive",
+  "theme-toggle",
+  "search",
+  "code-copy",
+  "home-info-mode",
+  "rss",
+]
+min_version = "0.146.0"
+
+[author]
+  name = "Simeon Ivanov"
+  homepage = "https://simeonivanov.org"
+
+[original]
+  name = "PaperMod"
+  author = "Aditya Telange"
+  homepage = "https://github.com/adityatelange"
+  repo = "https://github.com/adityatelange/hugo-PaperMod"

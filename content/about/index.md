@@ -1,11 +1,11 @@
-+++
-date = '2026-01-08T00:00:00+00:00'
-draft = false
-title = 'About Me - Start Here'
-type = 'blank'
-indexable = true
-featured = true
-+++
+---
+title: "About Me"
+date: 2026-01-08
+draft: false
+hidemeta: true
+ShowToc: false
+ShowBreadCrumbs: false
+---
 
 Hello, I'm Simeon — a systems administrator by profession, and a passionate Linux enthusiast by heart.
 

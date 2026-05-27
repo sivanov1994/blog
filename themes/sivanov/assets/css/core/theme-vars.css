@@ -1,0 +1,45 @@
+:root {
+    --gap: 24px;
+    --content-gap: 20px;
+    --nav-width: 1024px;
+    --main-width: 720px;
+    --header-height: 60px;
+    --footer-height: 60px;
+    --radius: 8px;
+
+    /* Tokyo Night Light (day variant) */
+    --theme: #e1e2e7;
+    --entry: #d5d6db;
+    --primary: #3760bf;
+    --secondary: #6172b0;
+    --tertiary: #c4c8da;
+    --content: #3760bf;
+    --code-block-bg: #2e3352;
+    --code-bg: #c4c8da;
+    --border: #b4b5ba;
+    --accent: #2e7de9;
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    /* Tokyo Night Dark */
+    --theme: #1a1b26;
+    --entry: #24283b;
+    --primary: #c0caf5;
+    --secondary: #565f89;
+    --tertiary: #292e42;
+    --content: #c0caf5;
+    --code-block-bg: #16161e;
+    --code-bg: #1f2335;
+    --border: #292e42;
+    --accent: #7aa2f7;
+    color-scheme: dark;
+}
+
+.list {
+    background: var(--code-bg);
+}
+
+[data-theme="dark"] .list {
+    background: var(--theme);
+}

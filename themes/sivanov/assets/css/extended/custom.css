@@ -1,0 +1,191 @@
+/* ============================================================
+   sivanov theme — Tokyo Night + Bricolage Grotesque
+   ============================================================ */
+
+body {
+    font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+code, pre, kbd {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.88em;
+}
+
+/* --- Header: site title in accent + subtle bottom border --- */
+.header {
+    border-bottom: 1px solid var(--border);
+}
+
+.logo a {
+    color: var(--accent) !important;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.logo a:hover {
+    opacity: 0.8;
+}
+
+/* --- Nav menu --- */
+.menu a {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--secondary);
+    transition: color 0.15s ease;
+}
+
+.menu a:hover {
+    color: var(--accent);
+}
+
+.menu .active {
+    color: var(--accent) !important;
+    text-decoration-color: var(--accent);
+}
+
+/* --- Homepage bio (home-info) --- */
+.home-info .entry-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* --- Post entry cards --- */
+.post-entry {
+    border: 1px solid var(--border);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.post-entry:hover,
+.post-entry:focus-within {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+/* Post title turns accent on hover */
+.entry-header h2 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: color 0.15s ease;
+}
+
+.post-entry:hover .entry-header h2 {
+    color: var(--accent);
+}
+
+/* --- Tags --- */
+.post-tags a,
+.terms-tags a {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 12px;
+    color: var(--secondary);
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.post-tags a:hover,
+.terms-tags a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* --- Links in post content --- */
+.md-content a:not(.anchor),
+.post-content a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.3rem;
+    transition: opacity 0.15s ease;
+}
+
+.md-content a:not(.anchor):hover,
+.post-content a:hover {
+    opacity: 0.75;
+}
+
+/* --- Post h2 headings: subtle left accent bar --- */
+.post-content h2,
+.md-content h2 {
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--accent);
+}
+
+/* --- Inline code: Tokyo Night style --- */
+.post-content code,
+.md-content :not(pre) > code {
+    color: #bb9af7;
+    background: rgba(187, 154, 247, 0.1);
+    border-radius: 4px;
+    padding: 0.15em 0.4em;
+}
+
+[data-theme="dark"] .post-content code,
+[data-theme="dark"] .md-content :not(pre) > code {
+    color: #bb9af7;
+    background: rgba(187, 154, 247, 0.1);
+}
+
+/* --- Blockquote: accent left border --- */
+.md-content blockquote,
+.post-content blockquote {
+    border-inline-start: 3px solid var(--accent);
+    opacity: 0.9;
+}
+
+/* --- Table of contents --- */
+.toc a:hover {
+    color: var(--accent);
+}
+
+/* --- Archive year headings --- */
+.archive-year {
+    color: var(--accent) !important;
+}
+
+/* --- Post nav links --- */
+.post-nav-links a:hover {
+    color: var(--accent);
+}
+
+/* --- Pagination --- */
+.pagination a {
+    background: var(--accent);
+    color: var(--theme) !important;
+    font-weight: 600;
+}
+
+/* --- Code copy button --- */
+.copy-code {
+    background: rgba(122, 162, 247, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(122, 162, 247, 0.3);
+}
+
+/* --- Search input --- */
+#searchbox input {
+    border: 1px solid var(--border);
+    transition: border-color 0.2s;
+}
+
+#searchbox input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+/* --- Scrollbar (dark mode) --- */
+[data-theme="dark"] {
+    scrollbar-color: var(--tertiary) var(--theme);
+}
+
+/* --- Page header (Posts, Tags, etc.) --- */
+.page-header h1 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* --- Post meta text --- */
+.post-meta,
+.entry-footer {
+    font-size: 13px;
+}

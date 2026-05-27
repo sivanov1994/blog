@@ -1,4 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="#1a1a1a"/>
-  <text x="50" y="70" font-family="Arial, sans-serif" font-size="55" font-weight="bold" fill="#f0efea" text-anchor="middle">SI</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Tokyo Night dark background -->
+  <rect width="32" height="32" rx="6" fill="#1a1b26"/>
+  <!-- Terminal prompt >_ in Tokyo Night blue -->
+  <text x="3" y="23" font-family="monospace" font-size="15" font-weight="700" fill="#7aa2f7">&gt;_</text>
 </svg>
